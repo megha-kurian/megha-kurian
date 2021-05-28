@@ -1,0 +1,1440 @@
+﻿@model IEnumerable<BlueOrchard.Models.ReportingDashboardModel>
+
+<link rel="stylesheet" href="~/Content/assets/lib/bootstrap-4.5.3-dist/css/bootstrap.min.css">
+<script src="~/Content/assets/lib/bootstrap-4.5.3-dist/js/jquery-3.5.1.min.js"></script>
+<script src="~/Content/assets/lib/bootstrap-4.5.3-dist/js/bootstrap.min.js"></script>
+<script src="~/Content/assets/lib/bootstrap-4.5.3-dist/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="~/Content/assets/QiangTableTree/jquery.qtt.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/1000hz-bootstrap-validator/0.11.9/validator.min.js" integrity="sha512-dTu0vJs5ndrd3kPwnYixvOCsvef5SGYW/zSSK4bcjRBcZHzqThq7pt7PmCv55yb8iBvni0TSeIDV8RYKjZL36A==" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+@using System.Security.Claims
+@{
+    var claims = ((ClaimsIdentity)User.Identity).Claims;
+    var name = claims.FirstOrDefault(c => c.Type == "name")?.Value;
+}
+
+<div class="page-sub-header">
+    <h4 class="page-title">
+        Financial Report
+    </h4>
+    <div class="page-details">
+        <span class="glyphicon glyphicon-user"></span>
+        <span class="text-bold nav-user">Hello @name</span>
+        <a class="btn btn-primary" href="Home/SignOut">
+            <span class="glyphicon glyphicon-log-out"></span> Log out
+        </a>
+    </div>
+</div>
+<div class="page-sideMenu-left">
+    <div class="tree-view" style="padding: 10px">
+
+        <div class="treeHeaderBox">
+            @Html.DropDownList("listInvestee", new SelectList(ViewBag.listInvestee, "InvesteeId", "InvesteeName"), ViewBag.SelectedInvesteeName, new { @class = "form-control" })
+
+        </div>
+
+        <div> <label id="prisValue" style="margin:.5rem"></label></div>
+
+        <div id="report-history-table-tree" class="qiang-table-tree left-menu">
+            <!--start of QTTHeader-->
+            <div class="QTTHeader">
+                @Html.DropDownList("listYears", new SelectList(ViewBag.listYears as System.Collections.IEnumerable), ViewBag.SelectedYear, new { @class = "form-control" })
+
+            </div>
+            <!--end of QTTHeader-->
+            <!--start of QTTContainer-->
+            <div id="divMonth" class="QTTContainer test">
+            </div>
+            <!--end of QTTContainer-->
+        </div>
+    </div>
+    <div id="Actions" class="control-view">
+
+        <h5 class="text-bold" style=" margin-bottom: 15px">Actions</h5>
+        <button id="btnSave" class="btn btn-info border border-secondar display-block margin-bottom-10"><img class="flag-img" style="width: 16px;padding-left:0px" src="~/Content/assets/images/save.png">&nbsp; Save Changes Sep 2020</button>
+        <button id="btnSubmit" class="btn btn-info border border-secondar display-block margin-bottom-10"><img class="flag-img" style="width: 16px;padding-left:0px" src="~/Content/assets/images/submit.png">&nbsp;Submit Sep 2020</button>
+        <a href="#myModal" button id="btnPaste" class="btn btn-info border border-secondar display-block margin-bottom-10 " data-toggle="modal"><img class="flag-img" style="width: 16px;padding-left:0px" src="~/Content/assets/images/paste.png">&nbsp;Paste Data from Clipboard</a>
+        <div class="bs-example">
+            <!-- Button HTML (to Trigger Modal) -->
+            <!-- Modal HTML -->
+            <div id="myModal" class="modal fade">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <strong class="modal-title">Data Import From Excel</strong>
+                            <button id="close" type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <form data-toggle="validator" role="form">
+
+                                <div class="form-group">
+                                    <div class="textareacontrol">
+                                        <textarea id="inputComment" class="form-control z-depth-1" placeholder="Paste data here..." rows="20" required></textarea>
+                                    </div>
+
+
+
+
+                                    <div class="textmsgcontrol">
+
+                                        <p>To paste copied data from excel to the text box</p>
+                                        <p>1. Add cursor to text area</p>
+                                        <p>2. Use keyboard Ctrl V or(right click) to paste data</p>
+                                        <p>3. Click OK</p>
+
+                                    </div>
+
+                                </div>
+                                <div class="textareacontrol">
+
+                                    <label id="Errors" class="invalid-feedback" rows="2"></label>
+
+                                    <label id="Comments" class="error text-danger" rows="2"></label>
+
+
+
+
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="btnCancel" type="button" class="btn btn-danger navbar-btn"><span class="glyphicon glyphicon-remove"></span> Cancel</button>
+                            <button id="btnOK" type="button" class="btn btn-success navbar-btn"><span class="glyphicon glyphicon-ok"></span> Ok</button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="page-container">
+    <div id="qiang-table-tree-balancesheet" class="qiang-table-tree">
+        <!--start of QTTHeader-->
+        <div class="QTTHeader">
+            <div class="treeHeaderBoxzero"></div>
+            <div class="treeHeaderBoxone">
+                <span class="tLabelone"></span>
+                <ul class="tValue">
+                    <li style="width: 15%;">
+                        <div class="columnone">
+
+                        </div>
+                    </li>
+                    <li style="width: 15%;">
+                        <div class="columntwo">
+
+                        </div>
+                    </li>
+                    <li style="width: 15%;">
+                        <div class="columnthree">
+
+                        </div>
+                    </li>
+                    <li style="width: 15%;">
+                        <div class="columnfour">
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!--end of QTTHeader-->
+        <!--start of QTTContainer-->
+        <div class="QTTContainer properties">
+        </div>
+        <!--end of QTTContainer-->
+    </div>
+</div>
+<div id="info" class="modal fade" tabindex="-1" style="opacity:1">
+    <div class="modal-dialog" style="top: 15%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <strong class="modal-title">Alert</strong>
+                <button id="close" type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <strong class="modal-title">Do you want to save your changes</strong>
+            </div>
+            <div class="modal-footer">
+                <button id="btnNo" type="button" class="btn btn-danger navbar-btn"><span class="glyphicon glyphicon-remove"></span> No</button>
+                <button id="btnConfirm" type="button" class="btn btn-success navbar-btn"><span class="glyphicon glyphicon-ok"></span> Yes</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+<div id="id-findModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Are you sure you  want to save changes?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Any changes that you have made will be lost</p>
+            </div>
+            <div class="modal-footer">
+                @*<button type="button" class="btn btn-primary">Yes</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>*@
+
+
+                <button id="btnYes" type="button" data-dismiss="modal" class="btn btn-success navbar-btn"><span class="glyphicon glyphicon-ok"></span> Yes</button>
+                <button id="btnNo" type="button" class="btn btn-danger navbar-btn" onclick="SaveChanges();"><span class="glyphicon glyphicon-remove"></span> No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var isEdited = "false";
+ 
+    $(document).ready(function () {
+
+        // $("#Actions").attr('style', 'display:none');
+        var elem = document.getElementById('Actions');
+        elem.hidden = true;
+
+
+        window.setTimeout(function () {
+            $(".alert").fadeTo(1000, 0).slideUp(1000, function () {
+                $(this).remove();
+            });
+        }, 5000);
+    });
+
+
+
+</script>
+<script>
+
+    $(document).ready(function () {
+
+
+       var investeeText = $("#listInvestee option:selected").text();
+     //$("#listInvestee").removeAttr("disabled");
+        if (investeeText != "--Select Investee--") {
+
+            $("#listInvestee").attr('disabled', 'disabled');
+            var selectedid = @(ViewBag.SelectedInvesteeID);
+            //alert(selectedid);
+
+            $.ajax({
+                url: "@Url.Action("GetCurrency")",
+                data: { investeeId: selectedid },
+
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                success: function (json, textStatus) {
+                    json = json || {};
+                    for (var i = 0; i < json.length; i++) {
+                        $("#prisValue").text(investeeText + "-" + json[i].CurrencyDescription);
+                    }
+                }
+            });
+
+
+            LoadDefaultTree();
+        }
+
+        $("#listInvestee").removeAttr('disabled', 'disabled');
+
+          function LoadDefaultTree() {
+
+
+          //var investeeText = $("#listInvestee option:selected").text();
+          var selectid =  @(ViewBag.SelectedInvesteeID);
+          var yearText =  @(ViewBag.SelectedYear);
+
+          if (selectid != 0) {
+
+              $.ajax({
+
+                  type: "POST",
+                  url: "@Url.Action("LoadFinancialStatementsSchedule")",
+                  data: { clientId: '1', investeeId: selectid, year: yearText },
+                  dataType: "json",
+                  success: function (json, textStatus) {
+
+                      var treeDataLeft = {
+                          "name": "Financial Report",
+                          "value": {},
+                          "children": JSON.parse(json)
+                      }
+
+                      //(function ($) {
+                      'use strict';
+                      //$(function () {
+
+
+
+                      var QTTLeft = window.QTT.qiangTableTree({
+                          TreeBox: $('#report-history-table-tree'),
+                          createNodeIconHTML: function (nodeObj) {
+                              return '';
+                          },
+                          createNodeNameHTML: function (nodeObj) {
+                              var valueObj = nodeObj.value;
+                              var flagName = '';
+                              if (valueObj.showIcon && valueObj.icon != undefined && valueObj.icon != "") {
+                                  flagName = '<img class="flag-img" style="width: 15px;margin-left: 5px;margin-bottom: 0px;" src="/Content/assets/images/' + valueObj.icon + '" />'
+                              }
+
+                              var txt_dom = "<span style='padding:0px 14px;'>" + nodeObj.name + "</span>";
+                              if (valueObj.disable) {
+                                  txt_dom = "<span style='color: #b5b5b5;padding:0px 14px;'>" + nodeObj.name + "</span>"
+                              }
+
+                              return flagName + txt_dom;
+                          },
+                          createNodeBarHTML: function (nodeObj) {
+                              var valueHTML = '';
+                              return valueHTML;
+                          },
+                          createNodeValueHTML: function (nodeObj) {
+                              var valueHTML = '';
+                              var valueObj = nodeObj.value;
+                              return valueHTML;
+                          }
+                      });
+                      QTTLeft.updateTree(treeDataLeft); // Load Left side Menu Data
+                      QTTLeft.shrinkAllNode();
+                      QTTLeft.expandAllNode();
+
+
+                      var flagNode = $('.qiang-table-tree .qttLeaf .t-text');
+
+                      window.treeNodePosition = [];
+                      flagNode.each(function (index, domObj) {
+                          window.treeNodePosition.push({
+                              // x: $(domObj).offset().left + 20,
+                              y: $(domObj).offset().top + 10
+                          });
+                      });
+
+                      $(window).resize(function () {
+                          QTT.resizeFn();
+                      });
+
+                      $('#search-input').keydown(function (e) {
+                          if (e.keyCode === 13) {
+                              var keyword = $('#search-input').val();
+                              if (keyword !== '') {
+                                  var resultArray = QTT.findNode(keyword);
+                                  if (resultArray.length > 0) {
+                                      QTT.highlightNode(resultArray);
+                                      QTT.expandToNode(resultArray);
+                                  }
+                              }
+                              return;
+                          }
+                      });
+
+                      //});
+                      //})(jQuery);
+
+                      bindDefault();
+                  }
+
+              });
+
+
+          }
+      }
+
+
+           function bindDefault() {
+
+            $(".QTTHeader").show();
+                    if ($(this).find('.flag-img').length == 1) {
+
+                        //console.log($(this).attr('id').toString().replace('qtt_', ''));
+                        //alert(console.log($(this).attr('id').toString().replace('qtt_', '')));
+                        //console.log($(this).text().substring(0, 3).replace('M', ''));
+                        //var monthYear = $("#qtt_11.qttNode.qttLeaf div.qttItem div.tLabel div.tAction span.t-text span").text();
+                        var yearText =  @(ViewBag.SelectedYear);
+                            //$("#listYears option:selected").text();
+                        $.ajax({
+                            type: "POST",
+                            url: "@Url.Action("FindFinancialStatements")",
+                            data: { clientId: '1', monthNumber:'1', year: yearText },
+                            dataType: "json",
+                            success: function (json, textStatus) {
+
+                                console.log(json);
+
+                                $('.tLabelone').html("Code");
+                                //$('.treeHeaderBoxone').show();
+                                $('.columnfour').html(json.currentMonth);
+                                $('.columnthree').html(json.prevOneMonth);
+                                $('.columntwo').html(json.prevTwoMonth);
+                                $('.columnone').html(json.prevThreeMonth);
+
+                                var treeData = {
+                                    "name": "BS BALANCESHEET",
+
+                                    "value": { 'isParent1': true, 'isParent2': false, 'isParent3': false, 'isLast': false, 'isEditable': false, 'flag': 'check.png', 'value1': 0, 'value2': 0, 'value3': 0, 'value4':0  },
+                                    "children": JSON.parse(json.treeDataJosn)
+
+
+                                }
+                                $(".QTTContainer.properties").show();
+
+
+                                var QTT = window.QTT.qiangTableTree({
+                                    TreeBox: $('#qiang-table-tree-balancesheet'),
+                                    createNodeIconHTML: function (nodeObj) {
+                                        return '';
+                                    },
+                                    createNodeNameHTML: function (nodeObj) {
+                                        var valueObj = nodeObj.value;
+                                        var flagName = '';
+                                        if (valueObj.isParent1 || valueObj.isParent2 || valueObj.isParent3) {
+                                            flagName = '<img class="flag-img" src="/Content/assets/images/' + valueObj.flag + '.png" />'
+                                        }
+                                        var color = "color:#000;background-color:#FFF;";
+                                        if (valueObj.isParent1)
+                                            var color = "color:#fff;background-color:red;";
+                                        else if (valueObj.isParent2)
+                                            var color = "color:#000;background-color:#9dd4ff;";
+                                        else if (valueObj.isParent3)
+                                            var color = "color:#000;background-color:#e4e4e4;";
+                                        return "<span style='width: 100%;display: block;padding: 0px 14px;" + color + "'>" + nodeObj.name + "</span>";
+                                    },
+                                    createNodeBarHTML: function (nodeObj) {
+                                        var valueHTML = '';
+                                        return valueHTML;
+                                    },
+                                    createNodeValueHTML: function (nodeObj) {
+                                        var valueHTML = '';
+                                        var valueObj = nodeObj.value;
+                                        if (valueObj.isParent1 || valueObj.isParent2 || valueObj.isParent3) {
+                                            var color = "color:#000;background-color:#FFF;";
+                                            if (valueObj.isParent1)
+                                                var color = "color:#fff;background-color:red;";
+                                            else if (valueObj.isParent2)
+                                                var color = "color:#000;background-color:#9dd4ff;";
+                                            else if (valueObj.isParent3)
+                                                var color = "color:#000;background-color:#e4e4e4;";
+
+                                            valueHTML = '<li class="td-1"  style="width: 137px;' + color + '">' + (valueObj.value1) + '</li>'
+                                                + '<li class="td-2" style="width: 137px;' + color + '">' + (valueObj.value2) + '</li>'
+                                                + '<li class="td-3" style="width: 137px;' + color + '">' + (valueObj.value3) + '</li>'
+                                                + '<li class="td-4" style="width: 137px;' + color + '">' + (valueObj.value4) + '</li>';
+                                        }
+                                        else if (valueObj.isLast) {
+                                            valueHTML = '<li class="td-1" style="width: 137px;">' + (valueObj.value1) + '</span></li>'
+                                                + '<li class="td-2" style="width: 137px;">' + (valueObj.value2) + '</span></li>'
+                                                + '<li class="td-3" style="width: 137px;">' + (valueObj.value3) + '</span></li>'
+                                                ;
+                                            if (valueObj.isEditable) {
+                                                valueHTML = valueHTML + `<li class="td-4" style="width: 137px;">
+                                            <input class='target' id='EditValue' type='number' oninput="OnUpdate()"
+                                             value="` + (valueObj.value4) + `""/>
+                                            </li>`;
+                                            } else {
+                                                valueHTML = valueHTML + `<li class="td-4" style="width: 137px;">` + (valueObj.value4) + `</span></li>`;
+                                            }
+
+                                        }
+                                        else {
+
+                                            valueHTML = '<li class="td-1">&nbsp;</li>'
+                                                + '<li class="td-2">&nbsp;</li>'
+                                                + '<li class="td-3">&nbsp;</li>'
+                                                + '<li class="td-4">&nbsp;</li>';
+                                        }
+
+                                        return valueHTML;
+                                    }
+                                });
+                                QTT.updateTree(treeData);
+                                QTT.shrinkAllNode();
+                                //QTT.expandAllNode();
+
+
+
+                            }
+
+
+                        });
+                    }
+                    else {
+                        var elem = document.getElementById('Actions');
+                        elem.hidden = true;
+
+                        var AlertmMessage = `<div class="alert alert-warning alert-dismissible" role="alert">
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                           No Balance sheet available
+                                        </div>`
+                        $('.tLabelone').html(AlertmMessage);
+                        //$('#qiang-table-tree-balancesheet').hide();
+                        $(".QTTContainer.properties").hide();
+                        //$('.treeHeaderBoxone').hide();
+                        $('.columnfour').html('');
+                        $('.columnthree').html('');
+                        $('.columntwo').html('');
+                        $('.columnone').html('');
+
+                    }
+
+            bindButtonClick();
+        }
+
+
+        });
+</script>
+<script>
+    var qttid = 0;
+    $(document).ready(function () {
+
+        $("#listInvestee").change(function () {
+
+                var investeeText = $("#listInvestee option:selected").text();
+                var selectedid = $("#listInvestee option:selected").val();
+                //alert("Investee Name Changed");
+            //$("#info").modal('show');
+            //var InvesteeMessage = `<div class="alert alert-warning alert-dismissible" role="alert">
+            //                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            //                                 <strong>Investee Changed</strong>
+
+            //                            </div>`
+            //$('.treeHeaderBoxzero').html(InvesteeMessage);
+            //$(".alert-dismissible").fadeTo(2000, 500).slideUp(500, function () {
+            //    $(".alert-dismissible").alert('close');
+            //});
+
+            if (isEdited === "true") {
+                runCommands();
+                   //$("#info").modal('show');
+            }
+            else {
+
+
+
+
+                //var msg = document.getElementById('Messages');
+                //msg.innerHTML = "Investee Name Changed";
+                //$("#Messages").html("Investee Name Changed");
+                //$("#Messages").addClass("error");
+                //$('.tLabelone').html(" ");
+                $.ajax({
+                    url: "/ReportingDashboard/GetCurrency",
+                    data: { investeeId: selectedid },
+
+                    type: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    success: function (json, textStatus) {
+                        json = json || {};
+                        for (var i = 0; i < json.length; i++) {
+                            $("#prisValue").text(investeeText + "-" + json[i].currencyDescription);
+                        }
+                    }
+                });
+
+
+
+
+                $("#listYears").empty();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetYear")', // we are calling json method
+                    dataType: 'json',
+                    data: { investeeId: selectedid },
+
+                    success: function (json, textStatus) {
+                        $.each(json, function (i, json) {
+                            $("#listYears").append('<option value="' + i + '">' +
+                                json.toString() + '</option>');
+                            console.log(i);
+                            console.log(json.toString());
+                        });
+                    },
+                    error: function (ex) {
+                        alert('Failed to retrieve years.' + ex);
+                    }
+                });
+
+
+                LoadTree();
+            }
+        });
+
+         $("#listYears").change(function () {
+
+                 var yearText = $("#listYears option:selected").text();
+                 var selectid = $("#listInvestee option:selected").val();
+             //     var YearMessage = `<div class="alert alert-warning alert-dismissible" role="alert">
+             //                               <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+             //                               <strong>Year Changed</strong>
+             //                           </div>`
+             //$('.treeHeaderBoxzero').html(YearMessage);
+             //$(".alert-dismissible").fadeTo(2000, 500).slideUp(500, function () {
+             //    $(".alert-dismissible").alert('close');
+             //});
+
+             if (isEdited === "true") {
+                 runCommands();
+                 //$("#info").modal('show');
+             }
+             else {
+                 if (selectid > 0) {
+
+                     $.ajax({
+
+                         type: "POST",
+                         url: "@Url.Action("LoadFinancialStatementsSchedule")",
+                         data: { clientId: '1', investeeId: selectid, year: yearText },
+                         dataType: "json",
+                         success: function (json, textStatus) {
+
+                             var treeDataLeft = {
+                                 "name": "Financial Report",
+                                 "value": {},
+                                 "children": JSON.parse(json)
+                             }
+
+                             //(function ($) {
+                             'use strict';
+                             //$(function () {
+
+
+
+                             var QTTLeft = window.QTT.qiangTableTree({
+                                 TreeBox: $('#report-history-table-tree'),
+                                 createNodeIconHTML: function (nodeObj) {
+                                     return '';
+                                 },
+                                 createNodeNameHTML: function (nodeObj) {
+                                     var valueObj = nodeObj.value;
+                                     var flagName = '';
+                                     if (valueObj.showIcon && valueObj.icon != undefined && valueObj.icon != "") {
+                                         flagName = '<img class="flag-img" style="width: 15px;margin-left: 5px;margin-bottom: 0px;" src="/Content/assets/images/' + valueObj.icon + '" />'
+                                     }
+
+                                     var txt_dom = "<span style='padding:0px 14px;'>" + nodeObj.name + "</span>";
+                                     if (valueObj.disable) {
+                                         txt_dom = "<span style='color: #b5b5b5;padding:0px 14px;'>" + nodeObj.name + "</span>"
+                                     }
+
+                                     return flagName + txt_dom;
+                                 },
+                                 createNodeBarHTML: function (nodeObj) {
+                                     var valueHTML = '';
+                                     return valueHTML;
+                                 },
+                                 createNodeValueHTML: function (nodeObj) {
+                                     var valueHTML = '';
+                                     var valueObj = nodeObj.value;
+                                     return valueHTML;
+                                 }
+                             });
+                             QTTLeft.updateTree(treeDataLeft); // Load Left side Menu Data
+                             QTTLeft.shrinkAllNode();
+                             QTTLeft.expandAllNode();
+
+
+                             var flagNode = $('.qiang-table-tree .qttLeaf .t-text');
+
+                             window.treeNodePosition = [];
+                             flagNode.each(function (index, domObj) {
+                                 window.treeNodePosition.push({
+                                     // x: $(domObj).offset().left + 20,
+                                     y: $(domObj).offset().top + 10
+                                 });
+                             });
+
+                             $(window).resize(function () {
+                                 QTT.resizeFn();
+                             });
+
+                             $('#search-input').keydown(function (e) {
+                                 if (e.keyCode === 13) {
+                                     var keyword = $('#search-input').val();
+
+                                     if (keyword !== '') {
+                                         var resultArray = QTT.findNode(keyword);
+                                         if (resultArray.length > 0) {
+                                             QTT.highlightNode(resultArray);
+                                             QTT.expandToNode(resultArray);
+                                             console.log(resultArray);
+
+                                         }
+
+                                     }
+                                     return;
+                                 }
+                             });
+
+                             //});
+                             //})(jQuery);
+
+                             bindButtonClick();
+                         }
+
+                     });
+
+                 }
+                 else {   //alert("Please select investee");
+
+                     var SelectInvesteeMessage = `<div class="alert alert-warning alert-dismissible" role="alert">
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                          <strong>Please select investee</strong>
+                                        </div>`
+                     $('.treeHeaderBoxzero').html(SelectInvesteeMessage);
+
+                     $(".alert-dismissible").fadeTo(2000, 500).slideUp(500, function () {
+                         $(".alert-dismissible").alert('close');
+                     });
+                 }
+             }
+         });
+
+        function bindButtonClick() {
+
+            $('.qttNode:gt(0)').click(function () {
+
+                if (isEdited === "true") {
+
+                    runCommands();
+                    debugger;
+                    var qttid = $(this).text().substring(0, 3).replace('M', '');
+                    alert(qttid);
+                }
+
+             
+                else {
+
+
+
+                    $('.tLabelone').html(" ");
+                    var elem = document.getElementById('Actions');
+                    elem.hidden = false;
+
+                    $(".page-container").attr('style', 'background:none');
+                    if ($(this).find('.flag-img').length == 1) {
+
+                        var listItems = $(".tAction");
+                        for (let i = 0; i < listItems.length; i++) {
+                            listItems[i].classList.remove("active");
+                        }
+                        var currentNode = $(this).find('.tAction');
+                        currentNode[0].classList.add("active");
+
+                        console.log($(this).attr('id').toString().replace('qtt_', ''));
+
+                        //alert(console.log($(this).attr('id').toString().replace('qtt_', '')));
+                        console.log($(this).text().substring(0, 3).replace('M', ''));
+                        //var monthYear = $("#qtt_11.qttNode.qttLeaf div.qttItem div.tLabel div.tAction span.t-text span").text();
+                        var yearText = $("#listYears option:selected").text();
+
+
+
+                        if ($(this).html().search("Rejected") > 0) {
+
+                            $('#btnSave').removeAttr('style');
+                            $('#btnSave').prop('disabled', false);
+                            $('#btnSubmit').removeAttr('style');
+                            $('#btnSubmit').prop('disabled', false);
+                            $('#btnPaste').removeAttr('style');
+                            $('#btnPaste').prop('disabled', false);
+
+
+                        }
+                        else if ($(this).html().search("Initial") > 0) {
+                            $('#btnSave').removeAttr('style');
+                            $('#btnSave').prop('disabled', false);
+                            $('#btnSubmit').removeAttr('style');
+                            $('#btnSubmit').prop('disabled', false);
+                            $('#btnPaste').removeAttr('style');
+                            $('#btnPaste').prop('disabled', false);
+
+                        }
+                        else if ($(this).html().search("Approved") > 0) {
+                            $('#btnSave').prop('style', 'background-color:#D8D8D8')
+                            $('#btnSave').prop('disabled', true);
+                            $('#btnSubmit').prop('style', 'background-color:#D8D8D8')
+                            $('#btnSubmit').prop('disabled', true);
+                            $('#btnPaste').prop('style', 'background-color:#D8D8D8')
+                            $('#btnPaste').prop('disabled', true);
+
+                        }
+                        else if ($(this).html().search("Pending") > 0) {
+                            $('#btnSave').prop('style', 'background-color:#D8D8D8')
+                            $('#btnSave').prop('disabled', true);
+                            $('#btnSubmit').prop('style', 'background-color:#D8D8D8')
+                            $('#btnSubmit').prop('disabled', true);
+                            $('#btnPaste').prop('style', 'background-color:#D8D8D8')
+                            $('#btnPaste').prop('disabled', true);
+                        }
+
+
+                        $.ajax({
+                            type: "POST",
+                            url: "@Url.Action("FindFinancialStatements")",
+                            data: { clientId: '1', monthNumber: $(this).text().substring(0, 3).replace('M', ''), year: yearText },
+                            dataType: "json",
+                            success: function (json, textStatus) {
+
+                                console.log(json);
+
+                                $('.tLabelone').html("Code");
+                                //$('.treeHeaderBoxone').show();
+                                $('.columnfour').html(json.currentMonth);
+                                $('.columnthree').html(json.prevOneMonth);
+                                $('.columntwo').html(json.prevTwoMonth);
+                                $('.columnone').html(json.prevThreeMonth);
+
+                                var treeData = {
+                                    "name": "BALANCE SHEET",
+                                    "value": { 'isParent1': true, 'isParent2': false, 'isParent3': false, 'isLast': false, 'isEditable': false, 'flag': 'check.png', 'value1': 0, 'value2': 0, 'value3': 0, 'value4': 0 },
+                                    "children": JSON.parse(json.treeDataJosn)
+
+
+                                }
+                                $(".QTTContainer.properties").show();
+
+
+                                var QTT = window.QTT.qiangTableTree({
+                                    TreeBox: $('#qiang-table-tree-balancesheet'),
+                                    createNodeIconHTML: function (nodeObj) {
+                                        return '';
+                                    },
+                                    createNodeNameHTML: function (nodeObj) {
+                                        var valueObj = nodeObj.value;
+                                        var flagName = '';
+                                        if (valueObj.isParent1 || valueObj.isParent2 || valueObj.isParent3) {
+                                            flagName = '<img class="flag-img" src="/Content/assets/images/' + valueObj.flag + '.png" />'
+                                        }
+                                        var color = "color:#000;background-color:#FFF;";
+                                        if (valueObj.isParent1)
+                                            var color = "color:#fff;background-color:red;";
+                                        else if (valueObj.isParent2)
+                                            var color = "color:#000;background-color:#9dd4ff;";
+                                        else if (valueObj.isParent3)
+                                            var color = "color:#000;background-color:#e4e4e4;";
+                                        return "<span style='width: 100%;display: block;padding: 0px 14px;" + color + "'>" + nodeObj.name + "</span>";
+                                    },
+                                    createNodeBarHTML: function (nodeObj) {
+                                        var valueHTML = '';
+                                        return valueHTML;
+                                    },
+                                    createNodeValueHTML: function (nodeObj) {
+                                        var valueHTML = '';
+                                        var valueObj = nodeObj.value;
+                                        if (valueObj.isParent1 || valueObj.isParent2 || valueObj.isParent3) {
+                                            var color = "color:#000;background-color:#FFF;";
+                                            if (valueObj.isParent1)
+                                                var color = "color:#fff;background-color:red;";
+                                            else if (valueObj.isParent2)
+                                                var color = "color:#000;background-color:#9dd4ff;";
+                                            else if (valueObj.isParent3)
+                                                var color = "color:#000;background-color:#e4e4e4;";
+
+                                            valueHTML = '<li class="td-1"  style="width: 137px;' + color + '">' + (valueObj.value1) + '</li>'
+                                                + '<li class="td-2" style="width: 137px;' + color + '">' + (valueObj.value2) + '</li>'
+                                                + '<li class="td-3" style="width: 137px;' + color + '">' + (valueObj.value3) + '</li>'
+                                                + '<li class="td-4" style="width: 137px;' + color + '">' + (valueObj.value4) + '</li>';
+                                        }
+                                        else if (valueObj.isLast) {
+                                            valueHTML = '<li class="td-1" style="width: 137px;">' + (valueObj.value1) + '</span></li>'
+                                                + '<li class="td-2" style="width: 137px;">' + (valueObj.value2) + '</span></li>'
+                                                + '<li class="td-3" style="width: 137px;">' + (valueObj.value3) + '</span></li>'
+                                                ;
+                                            if (valueObj.isEditable) {
+                                                valueHTML = valueHTML + `<li class="td-4" style="width: 137px;">
+                                            <input type="number" id="EditValue" class="target" oninput="OnUpdate()"
+                                            value="` + (valueObj.value4) + `""/>
+                                            </li>`;
+                                            } else {
+                                                valueHTML = valueHTML + `<li class="td-4" style="width: 137px;">` + (valueObj.value4) + `</span></li>`;
+                                            }
+
+                                        }
+                                        else {
+
+                                            valueHTML = '<li class="td-1">&nbsp;</li>'
+                                                + '<li class="td-2">&nbsp;</li>'
+                                                + '<li class="td-3">&nbsp;</li>'
+                                                + '<li class="td-4">&nbsp;</li>';
+                                        }
+
+                                        return valueHTML;
+                                    }
+                                });
+                                QTT.updateTree(treeData);
+                                //QTT.shrinkAllNode();
+                                QTT.expandAllNode();
+
+
+
+                            }
+
+
+                        });
+
+
+                    }
+                    else {
+
+                        var elem = document.getElementById('Actions');
+                        elem.hidden = true;
+                        var AlertmMessage = `<div class="alert alert-warning alert-dismissible" role="alert">
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                           No Balance sheet available
+                                        </div>`
+                        $('.tLabelone').html(AlertmMessage);
+                        //$('#qiang-table-tree-balancesheet').hide();
+                        $(".QTTContainer.properties").hide();
+                        //$('.treeHeaderBoxone').hide();
+                        $('.columnfour').html('');
+                        $('.columnthree').html('');
+                        $('.columntwo').html('');
+                        $('.columnone').html('');
+
+                    }
+
+
+                }
+                    });
+
+
+
+
+        }
+
+       
+        function LoadTree() {
+
+              var yearSelected = $("#listYears option:selected").val();
+              var selectedID = $("#listInvestee option:selected").val();
+
+              //alert(yearSelected + "--" + selectedID);
+
+              $.ajax({
+
+                  type: "POST",
+                  url: "@Url.Action("LoadFinancialStatementsSchedule")",
+                  data: { clientId: '1', investeeId: selectedID, year: new Date().getFullYear()},
+                  dataType: "json",
+                  success: function (json, textStatus) {
+
+                      var treeDataLeft = {
+                          "name": "Financial Report",
+                          "value": {},
+                          "children": JSON.parse(json)
+                      }
+
+                      //(function ($) {
+                      'use strict';
+                      //$(function () {
+
+
+
+                      var QTTLeft = window.QTT.qiangTableTree({
+                          TreeBox: $('#report-history-table-tree'),
+                          createNodeIconHTML: function (nodeObj) {
+                              return '';
+                          },
+                          createNodeNameHTML: function (nodeObj) {
+                              var valueObj = nodeObj.value;
+                              var flagName = '';
+                              if (valueObj.showIcon && valueObj.icon != undefined && valueObj.icon != "") {
+                                  flagName = '<img class="flag-img" style="width: 15px;margin-left: 5px;margin-bottom: 0px;" src="/Content/assets/images/' + valueObj.icon + '" />'
+                              }
+
+                              var txt_dom = "<span style='padding:0px 14px;'>" + nodeObj.name + "</span>";
+                              if (valueObj.disable) {
+                                  txt_dom = "<span style='color: #b5b5b5;padding:0px 14px;'>" + nodeObj.name + "</span>"
+                              }
+
+                              return flagName + txt_dom;
+                          },
+                          createNodeBarHTML: function (nodeObj) {
+                              var valueHTML = '';
+                              return valueHTML;
+                          },
+                          createNodeValueHTML: function (nodeObj) {
+                              var valueHTML = '';
+                              var valueObj = nodeObj.value;
+                              return valueHTML;
+                          }
+                      });
+                      QTTLeft.updateTree(treeDataLeft); // Load Left side Menu Data
+                      QTTLeft.shrinkAllNode();
+                      QTTLeft.expandAllNode();
+
+
+                      var flagNode = $('.qiang-table-tree .qttLeaf .t-text');
+
+                      window.treeNodePosition = [];
+                      flagNode.each(function (index, domObj) {
+                          window.treeNodePosition.push({
+                              // x: $(domObj).offset().left + 20,
+                              y: $(domObj).offset().top + 10
+                          });
+                      });
+
+                      $(window).resize(function () {
+                          QTT.resizeFn();
+                      });
+
+                      $('#search-input').keydown(function (e) {
+                          if (e.keyCode === 13) {
+                              var keyword = $('#search-input').val();
+                              if (keyword !== '') {
+                                  var resultArray = QTT.findNode(keyword);
+                                  if (resultArray.length > 0) {
+                                      QTT.highlightNode(resultArray);
+                                      QTT.expandToNode(resultArray);
+                                  }
+                              }
+                              return;
+                          }
+                      });
+
+                      //});
+                      //})(jQuery);
+
+                      bindButtonClick();
+                  }
+
+              });
+
+        }
+
+        function runCommands() {
+            // run commands
+            $('#id-findModal').modal();
+        }
+       
+
+    });
+
+</script>
+<script>
+
+    var isSaved = "false";
+    function OnUpdate() {
+
+        isEdited = "true";
+        //alert(isEdited);
+    }
+    function SaveChanges() {
+
+        isEdited = "false";
+        isSaved = "false";
+        debugger;
+        NoButtonClick();
+    }
+     function NoButtonClick() {
+         $('#id-findModal').modal('hide');
+         //$('.qtt_)').trigger("click");
+         $('.qttNode:gt(0)').click(function () {
+             debugger;
+             alert("hi");
+                    $('.tLabelone').html(" ");
+                    var elem = document.getElementById('Actions');
+                    elem.hidden = false;
+     
+                    $(".page-container").attr('style', 'background:none');
+                    if ($(this).find('.flag-img').length == 1) {
+
+                        var listItems = $(".tAction");
+                        for (let i = 0; i < listItems.length; i++) {
+                            listItems[i].classList.remove("active");
+                        }
+                        var currentNode = $(this).find('.tAction');
+                        currentNode[0].classList.add("active");
+
+                        console.log($(this).attr('id').toString().replace('qtt_', ''));
+
+                        //alert(console.log($(this).attr('id').toString().replace('qtt_', '')));
+                        console.log($(this).text().substring(0, 3).replace('M', ''));
+                        //var monthYear = $("#qtt_11.qttNode.qttLeaf div.qttItem div.tLabel div.tAction span.t-text span").text();
+                        var yearText = $("#listYears option:selected").text();
+
+
+
+                        if ($(this).html().search("Rejected") > 0) {
+
+                            $('#btnSave').removeAttr('style');
+                            $('#btnSave').prop('disabled', false);
+                            $('#btnSubmit').removeAttr('style');
+                            $('#btnSubmit').prop('disabled', false);
+                            $('#btnPaste').removeAttr('style');
+                            $('#btnPaste').prop('disabled', false);
+
+
+                        }
+                        else if ($(this).html().search("Initial") > 0) {
+                            $('#btnSave').removeAttr('style');
+                            $('#btnSave').prop('disabled', false);
+                            $('#btnSubmit').removeAttr('style');
+                            $('#btnSubmit').prop('disabled', false);
+                            $('#btnPaste').removeAttr('style');
+                            $('#btnPaste').prop('disabled', false);
+
+                        }
+                        else if ($(this).html().search("Approved") > 0) {
+                            $('#btnSave').prop('style', 'background-color:#D8D8D8')
+                            $('#btnSave').prop('disabled', true);
+                            $('#btnSubmit').prop('style', 'background-color:#D8D8D8')
+                            $('#btnSubmit').prop('disabled', true);
+                            $('#btnPaste').prop('style', 'background-color:#D8D8D8')
+                            $('#btnPaste').prop('disabled', true);
+
+                        }
+                        else if ($(this).html().search("Pending") > 0) {
+                            $('#btnSave').prop('style', 'background-color:#D8D8D8')
+                            $('#btnSave').prop('disabled', true);
+                            $('#btnSubmit').prop('style', 'background-color:#D8D8D8')
+                            $('#btnSubmit').prop('disabled', true);
+                            $('#btnPaste').prop('style', 'background-color:#D8D8D8')
+                            $('#btnPaste').prop('disabled', true);
+                        }
+
+
+                        $.ajax({
+                            type: "POST",
+                            url: "@Url.Action("FindFinancialStatements")",
+                            data: { clientId: '1', monthNumber: $(this).text().substring(0, 3).replace('M', ''), year: yearText },
+                            dataType: "json",
+                            success: function (json, textStatus) {
+
+                                console.log(json);
+
+                                $('.tLabelone').html("Code");
+                                //$('.treeHeaderBoxone').show();
+                                $('.columnfour').html(json.currentMonth);
+                                $('.columnthree').html(json.prevOneMonth);
+                                $('.columntwo').html(json.prevTwoMonth);
+                                $('.columnone').html(json.prevThreeMonth);
+
+                                var treeData = {
+                                    "name": "BALANCE SHEET",
+                                    "value": { 'isParent1': true, 'isParent2': false, 'isParent3': false, 'isLast': false, 'isEditable': false, 'flag': 'check.png', 'value1': 0, 'value2': 0, 'value3': 0, 'value4': 0 },
+                                    "children": JSON.parse(json.treeDataJosn)
+
+
+                                }
+                                $(".QTTContainer.properties").show();
+
+
+                                var QTT = window.QTT.qiangTableTree({
+                                    TreeBox: $('#qiang-table-tree-balancesheet'),
+                                    createNodeIconHTML: function (nodeObj) {
+                                        return '';
+                                    },
+                                    createNodeNameHTML: function (nodeObj) {
+                                        var valueObj = nodeObj.value;
+                                        var flagName = '';
+                                        if (valueObj.isParent1 || valueObj.isParent2 || valueObj.isParent3) {
+                                            flagName = '<img class="flag-img" src="/Content/assets/images/' + valueObj.flag + '.png" />'
+                                        }
+                                        var color = "color:#000;background-color:#FFF;";
+                                        if (valueObj.isParent1)
+                                            var color = "color:#fff;background-color:red;";
+                                        else if (valueObj.isParent2)
+                                            var color = "color:#000;background-color:#9dd4ff;";
+                                        else if (valueObj.isParent3)
+                                            var color = "color:#000;background-color:#e4e4e4;";
+                                        return "<span style='width: 100%;display: block;padding: 0px 14px;" + color + "'>" + nodeObj.name + "</span>";
+                                    },
+                                    createNodeBarHTML: function (nodeObj) {
+                                        var valueHTML = '';
+                                        return valueHTML;
+                                    },
+                                    createNodeValueHTML: function (nodeObj) {
+                                        var valueHTML = '';
+                                        var valueObj = nodeObj.value;
+                                        if (valueObj.isParent1 || valueObj.isParent2 || valueObj.isParent3) {
+                                            var color = "color:#000;background-color:#FFF;";
+                                            if (valueObj.isParent1)
+                                                var color = "color:#fff;background-color:red;";
+                                            else if (valueObj.isParent2)
+                                                var color = "color:#000;background-color:#9dd4ff;";
+                                            else if (valueObj.isParent3)
+                                                var color = "color:#000;background-color:#e4e4e4;";
+
+                                            valueHTML = '<li class="td-1"  style="width: 137px;' + color + '">' + (valueObj.value1) + '</li>'
+                                                + '<li class="td-2" style="width: 137px;' + color + '">' + (valueObj.value2) + '</li>'
+                                                + '<li class="td-3" style="width: 137px;' + color + '">' + (valueObj.value3) + '</li>'
+                                                + '<li class="td-4" style="width: 137px;' + color + '">' + (valueObj.value4) + '</li>';
+                                        }
+                                        else if (valueObj.isLast) {
+                                            valueHTML = '<li class="td-1" style="width: 137px;">' + (valueObj.value1) + '</span></li>'
+                                                + '<li class="td-2" style="width: 137px;">' + (valueObj.value2) + '</span></li>'
+                                                + '<li class="td-3" style="width: 137px;">' + (valueObj.value3) + '</span></li>'
+                                                ;
+                                            if (valueObj.isEditable) {
+                                                valueHTML = valueHTML + `<li class="td-4" style="width: 137px;">
+                                            <input type="number" id="EditValue" class="target" oninput="OnUpdate()"
+                                            value="` + (valueObj.value4) + `""/>
+                                            </li>`;
+                                            } else {
+                                                valueHTML = valueHTML + `<li class="td-4" style="width: 137px;">` + (valueObj.value4) + `</span></li>`;
+                                            }
+
+                                        }
+                                        else {
+
+                                            valueHTML = '<li class="td-1">&nbsp;</li>'
+                                                + '<li class="td-2">&nbsp;</li>'
+                                                + '<li class="td-3">&nbsp;</li>'
+                                                + '<li class="td-4">&nbsp;</li>';
+                                        }
+
+                                        return valueHTML;
+                                    }
+                                });
+                                QTT.updateTree(treeData);
+                                //QTT.shrinkAllNode();
+                                QTT.expandAllNode();
+
+
+
+                            }
+
+
+                        });
+
+
+                    }
+                    else {
+
+                        var elem = document.getElementById('Actions');
+                        elem.hidden = true;
+                        var AlertmMessage = `<div class="alert alert-warning alert-dismissible" role="alert">
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                           No Balance sheet available
+                                        </div>`
+                        $('.tLabelone').html(AlertmMessage);
+                        //$('#qiang-table-tree-balancesheet').hide();
+                        $(".QTTContainer.properties").hide();
+                        //$('.treeHeaderBoxone').hide();
+                        $('.columnfour').html('');
+                        $('.columnthree').html('');
+                        $('.columntwo').html('');
+                        $('.columnone').html('');
+
+                    }
+
+
+
+                    });
+
+
+
+
+        }
+
+    $(function () {
+
+
+
+        $("#btnSubmit").click(function () {
+
+            var editedBSArray = [];
+
+            $(".qttItem:gt(14)").each(function (index, item) {
+                if ($($(this).children().last().last().children().last()[0]).children()) {
+                    console.log($($($(this).children().last().last().children().last()[0]).children().last()));
+
+
+                    editedBSArray.push({
+                        lineItem: $($(this).children().first()).text(),
+                        value: $($($(this).children().last().last().children().last()[0]).children().last()).val()
+                    });
+
+
+                }
+
+            });
+
+            console.log(editedBSArray.filter(x => x.value != null));
+            var selectid = $("#listInvestee option:selected").val();
+            isEdited = "false";
+            $.ajax({
+
+                type: "POST",
+                url: "@Url.Action("SubmitFinancialStatement")",
+                data: { clientId: '1', investeeId: selectid, balanceSheet: JSON.stringify(editedBSArray.filter(x => x.value != null)) },
+                dataType: "json",
+                success: function (json, textStatus) {
+
+                    var treeDataLeft = {
+                        "name": "Financial Report",
+                        "value": {},
+                        "children": JSON.parse(json)
+                    }
+                }
+            });
+        });
+
+        $("#btnSave").click(function () {
+
+            var editedBSArray = [];
+            isEdited = "false";
+            isSaved = "false";
+            $(".qttItem:gt(13)").each(function (index, item) {
+                if ($($(this).children().last().last().children().last()[0]).children()) {
+                    console.log($($($(this).children().last().last().children().last()[0]).children().last()));
+
+
+                    editedBSArray.push({
+                        lineItem: $($(this).children().first()).text(),
+                        //value: $($($(this).children().last().last().children().last()[0]).children().last()).html()
+                        value: $($(this).children().last().last().children().last()[0]).text()
+                    });
+
+                    //  debugger;
+                }
+
+            });
+
+            console.log(editedBSArray.filter(x => x.value != null));
+            var selectid = $("#listInvestee option:selected").val();
+
+            $.ajax({
+
+                type: "POST",
+                url: "@Url.Action("CreateFinancialStatement")",
+                data: { clientId: '1', investeeId: selectid, balanceSheet: JSON.stringify(editedBSArray.filter(x => x.value != null)) },
+                dataType: "json",
+                success: function (json, textStatus) {
+
+                    var treeDataLeft = {
+                        "name": "Financial Report",
+                        "value": {},
+                        "children": JSON.parse(json)
+                    }
+                }
+            });
+        });
+
+        $("#btnOK").click(function () {
+
+            //var data = $('textarea[name=excel_data]').val();
+            var data = $("#inputComment").val();
+            var selectid = $("#listInvestee option:selected").val();
+
+            $.ajax({
+
+                type: "POST",
+                url: "@Url.Action("PasteFinancialStatement")",
+                data: { clientId: '1', investeeId: selectid, textData: data },
+                dataType: "json",
+                success: function (json, textStatus) {
+                    json.isCreated = json.isCreated || {};
+                    console.log(json);
+
+                    if (json.isCreated === true) {
+
+                        json.listChild = json.listChild || {};
+                        var updatedValues = JSON.parse(json.listChild);
+
+                        $(".qttItem:gt(13)").each(function (index, item) {
+
+                            if ($($(this).children().last().last().children().last()[0]).children()) {
+
+                                console.log($($($(this).children().last().last().children().last()[0]).children().last()));
+                                console.log(updatedValues);
+                                for (var i = 0; i < updatedValues.length; i++) {
+
+                                    console.log($($(this).children().last()).text());
+                                    console.log(updatedValues[i].LineItemsId);
+                                    var updatedId = $($(this).children().first()).text();
+                                    console.log(updatedId);
+                                    if ((updatedId === updatedValues[i].LineItemsId)) {
+
+                                        $($(this).children().last().last().children().last()[0]).html(updatedValues[i].Value);
+                                    }
+
+                                    console.log($($(this).children().last().last().children().last()[0]).text());
+
+                                }
+
+                            }//}
+                        });
+
+                        $("#Comments").html("Changes Updated.. Please Verify and Save");
+                        $("#Comments").addClass("success");
+
+
+                    }
+                    else {
+
+
+                        $("#Comments").html(json.errorMessage);
+                        $("#Comments").addClass("error");
+
+                    }
+                }
+
+
+            });
+
+
+
+
+        });
+
+        $("#btnCancel").click(function () {
+
+            $("#inputComment").val("");
+            $("#Comments").html("");
+        });
+
+        $("#close").click(function () {
+
+            $("#inputComment").val("");
+            $("#Comments").html("");
+            $("#myModal").style.display = "none";
+
+        });
+        //$("#btnYes").click(function () {
+
+
+        //    $("#id-findModal").style.display = "none";
+
+        //});
+        //$("#btnNo").click(function () {
+
+        //    $("#id-findModal").style.display = "none";
+        //    isSaved = "true";
+        //});
+    });
+
+
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
